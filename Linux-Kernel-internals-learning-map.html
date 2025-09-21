@@ -1,825 +1,271 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linux Kernel Development - Interactive Learning Map</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1600px; margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px; padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .header { text-align: center; margin-bottom: 40px; }
-        h1 { color: #2c3e50; margin-bottom: 10px; font-size: 2.5em; }
-        .subtitle { color: #7f8c8d; font-size: 1.1em; margin-bottom: 30px; }
-        .tabs {
-            display: flex; justify-content: center; margin-bottom: 30px;
-            background: #f8f9fa; border-radius: 10px; padding: 5px; flex-wrap: wrap;
-        }
-        .tab {
-            padding: 12px 24px; border-radius: 8px; background: transparent;
-            border: none; cursor: pointer; font-weight: 600;
-            transition: all 0.3s ease; color: #7f8c8d; margin: 2px;
-        }
-        .tab.active { background: #3498db; color: white; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3); }
-        .tab:hover { background: #ecf0f1; }
-        .tab.active:hover { background: #2980b9; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .concept-map {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px; margin-bottom: 40px;
-        }
-        .phase {
-            background: #fff; border-radius: 15px; padding: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-left: 6px solid;
-            transition: all 0.3s ease; position: relative;
-        }
-        .phase:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
-        .phase-1 { border-color: #e74c3c; }
-        .phase-2 { border-color: #3498db; }
-        .phase-3 { border-color: #2ecc71; }
-        .phase-4 { border-color: #f39c12; }
-        .phase-5 { border-color: #9b59b6; }
-        .phase-header { display: flex; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-        .phase-number {
-            width: 40px; height: 40px; border-radius: 50%; color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; margin-right: 15px; font-size: 1.2em;
-        }
-        .phase-1 .phase-number { background: #e74c3c; }
-        .phase-2 .phase-number { background: #3498db; }
-        .phase-3 .phase-number { background: #2ecc71; }
-        .phase-4 .phase-number { background: #f39c12; }
-        .phase-5 .phase-number { background: #9b59b6; }
-        .phase-title { font-size: 1.4em; font-weight: bold; color: #2c3e50; flex: 1; min-width: 200px; }
-        .duration {
-            background: #ecf0f1; padding: 5px 12px; border-radius: 15px;
-            font-size: 0.9em; color: #7f8c8d; font-weight: 500;
-        }
-        .topics { list-style: none; padding: 0; margin: 0; }
-        .topic {
-            background: #f8f9fa; margin: 12px 0; padding: 18px; border-radius: 12px;
-            border-left: 4px solid #bdc3c7; cursor: pointer; transition: all 0.3s ease;
-        }
-        .topic:hover { background: #e3f2fd; border-left-color: #2196f3; transform: translateX(5px); }
-        .topic.expanded { background: #e8f5e8; border-left-color: #4caf50; }
-        .topic-title {
-            font-weight: 600; color: #2c3e50; margin-bottom: 8px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .topic-description { font-size: 0.9em; color: #7f8c8d; line-height: 1.4; margin-bottom: 12px; }
-        .topic-resources {
-            display: none; margin-top: 15px; padding-top: 15px;
-            border-top: 1px solid #e9ecef; max-height: 0; overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .topic.expanded .topic-resources { display: block; max-height: 1000px; }
-        .resource-links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .resource-link {
-            padding: 6px 12px; background: #3498db; color: white; text-decoration: none;
-            border-radius: 6px; font-size: 0.85em; font-weight: 500;
-            transition: all 0.2s ease; display: inline-block;
-        }
-        .resource-link:hover { background: #2980b9; transform: translateY(-1px); text-decoration: none; color: white; }
-        .resource-link.doc { background: #e67e22; }
-        .resource-link.doc:hover { background: #d35400; }
-        .resource-link.video { background: #e74c3c; }
-        .resource-link.video:hover { background: #c0392b; }
-        .resource-link.code { background: #27ae60; }
-        .resource-link.code:hover { background: #229954; }
-        .resource-link.tool { background: #8e44ad; }
-        .resource-link.tool:hover { background: #7d3c98; }
-        .hands-on-tasks {
-            background: #fff3cd; border: 1px solid #ffeaa7;
-            border-radius: 8px; padding: 12px; margin-top: 10px;
-        }
-        .hands-on-title { font-weight: 600; color: #856404; margin-bottom: 8px; }
-        .task-list { list-style: none; padding: 0; margin: 0; }
-        .task-item { padding: 4px 0; font-size: 0.85em; color: #856404; }
-        .task-item::before { content: "⚡ "; margin-right: 5px; }
-        .expand-icon { transition: transform 0.3s ease; font-size: 0.8em; color: #7f8c8d; }
-        .topic.expanded .expand-icon { transform: rotate(180deg); }
-        .progress-tracker {
-            background: white; border-radius: 15px; padding: 30px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        }
-        .progress-header { text-align: center; margin-bottom: 30px; }
-        .progress-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .milestone-group { background: #f8f9fa; border-radius: 12px; padding: 20px; }
-        .milestone-title {
-            font-size: 1.2em; font-weight: bold; color: #2c3e50;
-            margin-bottom: 15px; display: flex; align-items: center;
-        }
-        .milestone-icon {
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin-right: 10px; color: white; font-weight: bold; font-size: 0.9em;
-        }
-        .checklist { list-style: none; padding: 0; margin: 0; }
-        .checklist-item {
-            display: flex; align-items: flex-start; padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .checklist-item:last-child { border-bottom: none; }
-        .checkbox {
-            width: 20px; height: 20px; border: 2px solid #bdc3c7; border-radius: 4px;
-            margin-right: 12px; margin-top: 2px; cursor: pointer;
-            transition: all 0.2s ease; display: flex; align-items: center;
-            justify-content: center; flex-shrink: 0;
-        }
-        .checkbox.checked { background: #27ae60; border-color: #27ae60; }
-        .checkbox.checked::after { content: "✓"; color: white; font-weight: bold; font-size: 0.8em; }
-        .checklist-text { flex: 1; color: #2c3e50; font-size: 0.95em; line-height: 1.4; }
-        .checklist-item.completed .checklist-text { text-decoration: line-through; color: #7f8c8d; }
-        .progress-metrics {
-            text-align: center; margin-top: 40px; padding: 20px;
-            background: #f8f9fa; border-radius: 12px;
-        }
-        .progress-metrics h3 { color: #2c3e50; margin-bottom: 15px; }
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        .metric-card {
-            background: white; padding: 15px; border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .metric-value { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
-        .metric-label { color: #7f8c8d; font-size: 0.9em; }
-        @media (max-width: 768px) {
-            .container { padding: 15px; }
-            .concept-map { grid-template-columns: 1fr; }
-            .progress-grid { grid-template-columns: 1fr; }
-            .phase-header { flex-direction: column; align-items: flex-start; }
-            .phase-number { margin-bottom: 10px; }
-            .duration { margin-top: 10px; }
-            h1 { font-size: 2em; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linux Kernel Learning Map</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh}.container{max-width:1600px;margin:0 auto;background:#fff;border-radius:20px;padding:30px;box-shadow:0 20px 40px rgba(0,0,0,.1)}h1{color:#2c3e50;text-align:center;margin-bottom:10px}.subtitle{color:#7f8c8d;text-align:center;margin-bottom:30px}.tabs{display:flex;justify-content:center;margin-bottom:30px;background:#f8f9fa;border-radius:10px;padding:5px;flex-wrap:wrap}.tab{padding:12px 24px;border-radius:8px;background:0 0;border:none;cursor:pointer;font-weight:600;transition:all .3s;color:#7f8c8d;margin:2px}.tab.active{background:#3498db;color:#fff}.tab:hover{background:#ecf0f1}.tab-content{display:none}.tab-content.active{display:block}.phase{background:#fff;border-radius:15px;padding:25px;margin:20px 0;box-shadow:0 8px 25px rgba(0,0,0,.08);border-left:6px solid #3498db}.phase:hover{transform:translateY(-5px)}.topic{background:#f8f9fa;margin:12px 0;padding:18px;border-radius:12px;cursor:pointer;border-left:4px solid #bdc3c7}.topic:hover{background:#e3f2fd;border-left-color:#2196f3}.topic.active{background:#e8f5e8;border-left-color:#4caf50}.topic-title{font-weight:600;color:#2c3e50;display:flex;justify-content:space-between}.resources{display:none;margin-top:15px;padding-top:15px;border-top:1px solid #e9ecef}.topic.active .resources{display:block}.platform-tab{display:inline-block;padding:6px 12px;margin:5px;border:2px solid #dee2e6;border-radius:6px;cursor:pointer;background:#fff;font-size:.85em;font-weight:600}.platform-tab.active{background:#3498db;color:#fff;border-color:#3498db}.platform-content{display:none;margin-top:10px}.platform-content.active{display:block}.cmd{background:#2c3e50;color:#ecf0f1;padding:10px;border-radius:6px;margin:8px 0;font-family:monospace;font-size:.85em;overflow-x:auto}.link{color:#3498db;text-decoration:none;margin:0 5px;padding:4px 8px;background:#e3f2fd;border-radius:4px;font-size:.9em}.link:hover{background:#2196f3;color:#fff}.checkbox{width:20px;height:20px;border:2px solid #bdc3c7;border-radius:4px;margin-right:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}.checkbox.checked{background:#27ae60;border-color:#27ae60}.checkbox.checked::after{content:"✓";color:#fff;font-weight:bold;font-size:.8em}.check-item{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #e9ecef}.check-text{flex:1;color:#2c3e50}.check-item.done .check-text{text-decoration:line-through;color:#7f8c8d}@media(max-width:768px){.container{padding:15px}h1{font-size:2em}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 Linux Kernel Development Journey</h1>
-            <p class="subtitle">Interactive Learning Map with Resources & Progress Tracking</p>
-        </div>
-
-        <div class="tabs">
-            <button class="tab active" data-tab="overview">📊 Overview</button>
-            <button class="tab" data-tab="progress">✅ Progress Tracker</button>
-        </div>
-
-        <!-- Overview Tab -->
-        <div id="overview" class="tab-content active">
-            <div class="concept-map">
-                <div class="phase phase-1">
-                    <div class="phase-header">
-                        <div class="phase-number">1</div>
-                        <div class="phase-title">ARM Architecture & Boot</div>
-                        <div class="duration">4-6 weeks</div>
-                    </div>
-                    <ul class="topics">
-                        <li class="topic">
-                            <div class="topic-title">
-                                ARM Architecture Fundamentals
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">ARMv8-A, AARCH64/32, Exception Levels, MMU, GIC</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://developer.arm.com/documentation/ddi0487/latest" class="resource-link doc" target="_blank">ARM Reference Manual</a>
-                                    <a href="https://developer.arm.com/documentation/102404/latest" class="resource-link doc" target="_blank">Getting Started Guide</a>
-                                    <a href="https://www.youtube.com/watch?v=NNol7fRGo2E" class="resource-link video" target="_blank">ARMv8-A Overview</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Install QEMU ARM64: sudo apt install qemu-system-aarch64</li>
-                                        <li class="task-item">Install toolchain: sudo apt install gcc-aarch64-linux-gnu</li>
-                                        <li class="task-item">Write simple ARM64 assembly program</li>
-                                        <li class="task-item">Boot ARM64 kernel in QEMU</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="topic">
-                            <div class="topic-title">
-                                Boot Process Deep Dive
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">ROM → U-Boot → Kernel, ATF, UEFI integration</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://docs.u-boot.org/en/latest/" class="resource-link doc" target="_blank">U-Boot Documentation</a>
-                                    <a href="https://trustedfirmware-a.readthedocs.io/" class="resource-link doc" target="_blank">ARM Trusted Firmware</a>
-                                    <a href="https://github.com/u-boot/u-boot" class="resource-link code" target="_blank">U-Boot Source</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Clone U-Boot: git clone https://github.com/u-boot/u-boot.git</li>
-                                        <li class="task-item">Build U-Boot for Raspberry Pi 4</li>
-                                        <li class="task-item">Create custom boot scripts</li>
-                                        <li class="task-item">Set up TFTP network boot environment</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="topic">
-                            <div class="topic-title">
-                                Device Tree Mastery
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">DTS syntax, overlays, bindings, runtime modification</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://www.devicetree.org/specifications/" class="resource-link doc" target="_blank">Device Tree Specification</a>
-                                    <a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree" class="resource-link doc" target="_blank">Kernel DT Docs</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Install dtc: sudo apt install device-tree-compiler</li>
-                                        <li class="task-item">Analyze Raspberry Pi 4 device tree structure</li>
-                                        <li class="task-item">Create custom device tree nodes</li>
-                                        <li class="task-item">Compile device trees: dtc -I dts -O dtb</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="phase phase-2">
-                    <div class="phase-header">
-                        <div class="phase-number">2</div>
-                        <div class="phase-title">Core Kernel Subsystems</div>
-                        <div class="duration">6-8 weeks</div>
-                    </div>
-                    <ul class="topics">
-                        <li class="topic">
-                            <div class="topic-title">
-                                Memory Management
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">Virtual memory, page tables, allocators, SMMU</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://www.kernel.org/doc/gorman/html/understand/" class="resource-link doc" target="_blank">VM Manager Guide</a>
-                                    <a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm" class="resource-link code" target="_blank">MM Source Code</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Analyze ARM64 memory layout: cat /proc/iomem</li>
-                                        <li class="task-item">Write kernel module testing kmalloc/vmalloc</li>
-                                        <li class="task-item">Enable KASAN: CONFIG_KASAN=y</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="topic">
-                            <div class="topic-title">
-                                Process Management & Scheduler
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">CFS, RT schedulers, load balancing</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/kernel/sched" class="resource-link code" target="_blank">Scheduler Source</a>
-                                    <a href="https://lwn.net/Articles/230501/" class="resource-link doc" target="_blank">CFS Design</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Trace process creation: echo function > /sys/kernel/debug/tracing/current_tracer</li>
-                                        <li class="task-item">Analyze scheduler: cat /proc/sched_debug</li>
-                                        <li class="task-item">Test RT scheduling: chrt -f 50 ./program</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="phase phase-3">
-                    <div class="phase-header">
-                        <div class="phase-number">3</div>
-                        <div class="phase-title">Advanced Subsystems</div>
-                        <div class="duration">4-6 weeks</div>
-                    </div>
-                    <ul class="topics">
-                        <li class="topic">
-                            <div class="topic-title">
-                                Container Technologies
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">Cgroups v2, namespaces, resource control</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/admin-guide/cgroup-v2.rst" class="resource-link doc" target="_blank">Cgroups v2 Docs</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Create cgroup: mkdir /sys/fs/cgroup/test_group</li>
-                                        <li class="task-item">Set memory limit: echo "100M" > memory.max</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="topic">
-                            <div class="topic-title">
-                                eBPF Infrastructure
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">Verifier, program types, maps, tracing</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://ebpf.io/what-is-ebpf/" class="resource-link doc" target="_blank">eBPF Introduction</a>
-                                    <a href="https://github.com/iovisor/bcc" class="resource-link tool" target="_blank">BCC Tools</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Install eBPF tools: sudo apt install bpfcc-tools</li>
-                                        <li class="task-item">Write tracing program with bpftrace</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="phase phase-4">
-                    <div class="phase-header">
-                        <div class="phase-number">4</div>
-                        <div class="phase-title">Hands-on ARM Development</div>
-                        <div class="duration">4-5 weeks</div>
-                    </div>
-                    <ul class="topics">
-                        <li class="topic">
-                            <div class="topic-title">
-                                Development Environment
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">Cross-compilation, buildroot, QEMU setup</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://buildroot.org/documentation.html" class="resource-link doc" target="_blank">Buildroot Docs</a>
-                                    <a href="https://www.qemu.org/docs/master/system/target-arm.html" class="resource-link doc" target="_blank">QEMU ARM Docs</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Install cross-compiler: sudo apt install gcc-aarch64-linux-gnu</li>
-                                        <li class="task-item">Configure kernel: make ARCH=arm64 defconfig</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="topic">
-                            <div class="topic-title">
-                                Raspberry Pi Hardware
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">Hardware setup, KGDB, custom drivers</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://www.raspberrypi.org/documentation/" class="resource-link doc" target="_blank">Raspberry Pi Docs</a>
-                                    <a href="https://www.kernel.org/doc/html/latest/dev-tools/kgdb.html" class="resource-link doc" target="_blank">KGDB Documentation</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Prepare RPi4: enable UART in config.txt</li>
-                                        <li class="task-item">Configure KGDB: kgdboc=ttyAMA0,115200</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="phase phase-5">
-                    <div class="phase-header">
-                        <div class="phase-number">5</div>
-                        <div class="phase-title">Real-time Integration</div>
-                        <div class="duration">2-3 weeks</div>
-                    </div>
-                    <ul class="topics">
-                        <li class="topic">
-                            <div class="topic-title">
-                                Real-time Kernel (PREEMPT_RT)
-                                <span class="expand-icon">▼</span>
-                            </div>
-                            <div class="topic-description">RT patches, priority inheritance</div>
-                            <div class="topic-resources">
-                                <div class="resource-links">
-                                    <a href="https://rt.wiki.kernel.org/" class="resource-link doc" target="_blank">RT Kernel Wiki</a>
-                                    <a href="https://www.kernel.org/pub/linux/kernel/projects/rt/" class="resource-link doc" target="_blank">RT Patches</a>
-                                </div>
-                                <div class="hands-on-tasks">
-                                    <div class="hands-on-title">🛠️ Hands-on Tasks</div>
-                                    <ul class="task-list">
-                                        <li class="task-item">Apply RT patches: zcat patch.gz | patch -p1</li>
-                                        <li class="task-item">Test latency: sudo ./cyclictest -p 90 -t -a -n</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Progress Tracker Tab -->
-        <div id="progress" class="tab-content">
-            <div class="progress-tracker">
-                <div class="progress-header">
-                    <h2 style="color: #2c3e50;">✅ Learning Progress Tracker</h2>
-                    <p style="color: #7f8c8d;">Track your journey through Linux kernel development mastery</p>
-                </div>
-
-                <div class="progress-grid">
-                    <div class="milestone-group">
-                        <div class="milestone-title">
-                            <div class="milestone-icon" style="background: #e74c3c;">1</div>
-                            Phase 1: ARM Architecture Foundation
-                        </div>
-                        <ul class="checklist">
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Downloaded ARM Architecture Reference Manual</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Installed QEMU and ARM64 toolchain</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Compiled and ran ARM64 assembly program</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Built U-Boot for Raspberry Pi 4</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Set up TFTP network boot environment</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Created custom device tree nodes</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="milestone-group">
-                        <div class="milestone-title">
-                            <div class="milestone-icon" style="background: #3498db;">2</div>
-                            Phase 2: Core Kernel Subsystems
-                        </div>
-                        <ul class="checklist">
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Analyzed ARM64 memory layout and page tables</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Set up KASAN for memory debugging</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Traced process creation with ftrace</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Analyzed CFS scheduler behavior</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Implemented synchronization primitives</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="milestone-group">
-                        <div class="milestone-title">
-                            <div class="milestone-icon" style="background: #2ecc71;">3</div>
-                            Phase 3: Advanced Subsystems
-                        </div>
-                        <ul class="checklist">
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Created custom cgroup configurations</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Implemented namespace isolation scenarios</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Created eBPF tracing programs</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Built performance monitoring with eBPF</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="milestone-group">
-                        <div class="milestone-title">
-                            <div class="milestone-icon" style="background: #f39c12;">4</div>
-                            Phase 4: Hardware Development
-                        </div>
-                        <ul class="checklist">
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Set up complete cross-compilation environment</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Built custom rootfs with Buildroot</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Booted custom kernel in QEMU ARM64</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Configured Raspberry Pi 4 for development</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Set up KGDB over serial console</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Wrote GPIO and SPI device drivers</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="milestone-group">
-                        <div class="milestone-title">
-                            <div class="milestone-icon" style="background: #9b59b6;">5</div>
-                            Phase 5: Real-time Integration
-                        </div>
-                        <ul class="checklist">
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Applied PREEMPT_RT patches to kernel</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Built and configured RT kernel</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Tested real-time latency with cyclictest</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Deployed RT kernel on hardware</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="milestone-group">
-                        <div class="milestone-title">
-                            <div class="milestone-icon" style="background: #34495e;">🎯</div>
-                            Final Projects & Mastery
-                        </div>
-                        <ul class="checklist">
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Completed custom ARM64 device driver project</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Performed container runtime analysis</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Implemented real-time system solution</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Completed performance optimization case study</div>
-                            </li>
-                            <li class="checklist-item">
-                                <div class="checkbox"></div>
-                                <div class="checklist-text">Contributed patch to Linux kernel project</div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="progress-metrics">
-                    <h3>🏆 Achievement Metrics</h3>
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-value" style="color: #e74c3c;" id="phase1-progress">0%</div>
-                            <div class="metric-label">Phase 1 Complete</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" style="color: #3498db;" id="phase2-progress">0%</div>
-                            <div class="metric-label">Phase 2 Complete</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" style="color: #2ecc71;" id="phase3-progress">0%</div>
-                            <div class="metric-label">Phase 3 Complete</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" style="color: #f39c12;" id="phase4-progress">0%</div>
-                            <div class="metric-label">Phase 4 Complete</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" style="color: #9b59b6;" id="phase5-progress">0%</div>
-                            <div class="metric-label">Phase 5 Complete</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" style="color: #34495e;" id="overall-progress">0%</div>
-                            <div class="metric-label">Overall Progress</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Tab switching functionality
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(tabName).classList.add('active');
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-        }
-
-        // Topic expansion functionality
-        function toggleTopic(element) {
-            element.classList.toggle('expanded');
-            const resources = element.querySelector('.topic-resources');
-            if (element.classList.contains('expanded')) {
-                resources.style.maxHeight = resources.scrollHeight + 'px';
-                resources.style.opacity = '1';
-            } else {
-                resources.style.maxHeight = '0px';
-                resources.style.opacity = '0';
-            }
-        }
-
-        // Checkbox functionality with localStorage
-        function toggleCheckbox(element) {
-            element.classList.toggle('checked');
-            const item = element.parentElement;
-            item.classList.toggle('completed');
-            saveProgress();
-            updateProgressMetrics();
-            
-            if (element.classList.contains('checked')) {
-                element.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    element.style.transform = 'scale(1)';
-                }, 200);
-            }
-        }
-
-        // Save progress to localStorage
-        function saveProgress() {
-            const checkboxes = document.querySelectorAll('.checkbox');
-            const progress = Array.from(checkboxes).map(cb => cb.classList.contains('checked'));
-            localStorage.setItem('kernelLearningProgress', JSON.stringify(progress));
-        }
-
-        // Load progress from localStorage
-        function loadProgress() {
-            const saved = localStorage.getItem('kernelLearningProgress');
-            if (saved) {
-                const progress = JSON.parse(saved);
-                const checkboxes = document.querySelectorAll('.checkbox');
-                checkboxes.forEach((cb, index) => {
-                    if (progress[index]) {
-                        cb.classList.add('checked');
-                        cb.parentElement.classList.add('completed');
-                    }
-                });
-                updateProgressMetrics();
-            }
-        }
-
-        // Update progress metrics
-        function updateProgressMetrics() {
-            const phases = [
-                { selector: '.milestone-group:nth-child(1) .checkbox', id: 'phase1-progress' },
-                { selector: '.milestone-group:nth-child(2) .checkbox', id: 'phase2-progress' },
-                { selector: '.milestone-group:nth-child(3) .checkbox', id: 'phase3-progress' },
-                { selector: '.milestone-group:nth-child(4) .checkbox', id: 'phase4-progress' },
-                { selector: '.milestone-group:nth-child(5) .checkbox', id: 'phase5-progress' }
-            ];
-
-            let totalCompleted = 0;
-            let totalItems = 0;
-
-            phases.forEach(phase => {
-                const checkboxes = document.querySelectorAll(phase.selector);
-                const completed = document.querySelectorAll(phase.selector + '.checked').length;
-                const percentage = checkboxes.length > 0 ? Math.round((completed / checkboxes.length) * 100) : 0;
-                
-                const element = document.getElementById(phase.id);
-                if (element) {
-                    element.textContent = percentage + '%';
-                }
-                
-                totalCompleted += completed;
-                totalItems += checkboxes.length;
-            });
-
-            const overallPercentage = totalItems > 0 ? Math.round((totalCompleted / totalItems) * 100) : 0;
-            const overallElement = document.getElementById('overall-progress');
-            if (overallElement) {
-                overallElement.textContent = overallPercentage + '%';
-            }
-        }
-
-        // Export progress function
-        function exportProgress() {
-            const progress = localStorage.getItem('kernelLearningProgress');
-            if (progress) {
-                const blob = new Blob([progress], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'kernel_learning_progress.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } else {
-                alert('No progress data to export!');
-            }
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProgress();
-
-            // Set up tab click handlers
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    showTab(tabName);
-                });
-            });
-
-            // Set up topic click handlers
-            document.querySelectorAll('.topic').forEach(topic => {
-                topic.addEventListener('click', function() {
-                    toggleTopic(this);
-                });
-            });
-
-            // Set up checkbox click handlers
-            document.querySelectorAll('.checkbox').forEach(checkbox => {
-                checkbox.addEventListener('click', function(event) {
-                    event.stopPropagation();
-                    toggleCheckbox(this);
-                });
-            });
-
-            updateProgressMetrics();
-
-            // Keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && e.key === 'Tab') {
-                    e.preventDefault();
-                    const tabs = document.querySelectorAll('.tab');
-                    const currentTab = document.querySelector('.tab.active');
-                    const currentIndex = Array.from(tabs).indexOf(currentTab);
-                    const nextIndex = (currentIndex + 1) % tabs.length;
-                    tabs[nextIndex].click();
-                }
-            });
-        });
-
-        console.log('🚀 Linux Kernel Development Progress Tracker loaded!');
-        console.log('💾 Progress is automatically saved to localStorage');
-        console.log('📤 Use exportProgress() to save progress to file');
-        console.log('⌨️  Use Ctrl+Tab to switch between tabs');
-    </script>
+<div class="container">
+<h1>🚀 Linux Kernel Learning Map</h1>
+<p class="subtitle">Complete Interactive Guide - macOS & Linux</p>
+<div class="tabs">
+<button class="tab active" onclick="showTab('learn')">📚 Learning Path</button>
+<button class="tab" onclick="showTab('progress')">✅ Progress</button>
+</div>
+<div id="learn" class="tab-content active">
+<div class="phase">
+<h2>Phase 1: ARM Architecture (4-6 weeks)</h2>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Setup Development Tools <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://developer.arm.com/documentation/ddi0487/latest" target="_blank">📖 ARM Manual</a>
+<a class="link" href="https://www.qemu.org/docs/master/system/target-arm.html" target="_blank">📖 QEMU Docs</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac1')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin1')">🐧 Linux</div>
+</div>
+<div id="mac1" class="platform-content active">
+<div class="cmd">brew install qemu gcc-aarch64-linux-gnu dtc</div>
+<div class="cmd">qemu-system-aarch64 --version</div>
+</div>
+<div id="lin1" class="platform-content">
+<div class="cmd">sudo apt install qemu-system-aarch64 gcc-aarch64-linux-gnu device-tree-compiler</div>
+<div class="cmd">qemu-system-aarch64 --version</div>
+</div>
+</div>
+</div>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Build U-Boot <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://docs.u-boot.org/en/latest/" target="_blank">📖 U-Boot Docs</a>
+<a class="link" href="https://github.com/u-boot/u-boot" target="_blank">💻 Source</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac2')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin2')">🐧 Linux</div>
+</div>
+<div id="mac2" class="platform-content active">
+<div class="cmd">brew install bison flex dtc openssl@3</div>
+<div class="cmd">git clone https://github.com/u-boot/u-boot.git && cd u-boot</div>
+<div class="cmd">make CROSS_COMPILE=aarch64-linux-gnu- rpi_4_defconfig</div>
+<div class="cmd">make CROSS_COMPILE=aarch64-linux-gnu- -j$(sysctl -n hw.ncpu)</div>
+</div>
+<div id="lin2" class="platform-content">
+<div class="cmd">sudo apt install bison flex libssl-dev device-tree-compiler</div>
+<div class="cmd">git clone https://github.com/u-boot/u-boot.git && cd u-boot</div>
+<div class="cmd">make CROSS_COMPILE=aarch64-linux-gnu- rpi_4_defconfig</div>
+<div class="cmd">make CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)</div>
+</div>
+</div>
+</div>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Device Tree <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://www.devicetree.org/specifications/" target="_blank">📖 DT Spec</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac3')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin3')">🐧 Linux</div>
+</div>
+<div id="mac3" class="platform-content active">
+<div class="cmd">brew install dtc</div>
+<div class="cmd">dtc -I dts -O dtb -o output.dtb input.dts</div>
+</div>
+<div id="lin3" class="platform-content">
+<div class="cmd">sudo apt install device-tree-compiler</div>
+<div class="cmd">dtc -I dts -O dtb -o output.dtb input.dts</div>
+</div>
+</div>
+</div>
+</div>
+<div class="phase">
+<h2>Phase 2: Core Kernel (6-8 weeks)</h2>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Build Kernel <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://www.kernel.org/doc/html/latest/" target="_blank">📖 Kernel Docs</a>
+<a class="link" href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git" target="_blank">💻 Source</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac4')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin4')">🐧 Linux</div>
+</div>
+<div id="mac4" class="platform-content active">
+<div class="cmd">git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</div>
+<div class="cmd">cd linux</div>
+<div class="cmd">make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig</div>
+<div class="cmd">make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(sysctl -n hw.ncpu)</div>
+</div>
+<div id="lin4" class="platform-content">
+<div class="cmd">sudo apt install build-essential libncurses-dev bison flex libssl-dev libelf-dev</div>
+<div class="cmd">git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</div>
+<div class="cmd">cd linux</div>
+<div class="cmd">make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig</div>
+<div class="cmd">make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)</div>
+</div>
+</div>
+</div>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Memory Management <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://www.kernel.org/doc/gorman/html/understand/" target="_blank">📖 VM Guide</a>
+<a class="link" href="https://lwn.net/Kernel/Index/#Memory_management" target="_blank">📖 LWN</a>
+<p style="margin-top:10px">Topics: Virtual memory, page tables, SLUB allocator, KASAN, SMMU</p>
+</div>
+</div>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Scheduler <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://lwn.net/Articles/230501/" target="_blank">📖 CFS Design</a>
+<p style="margin-top:10px">Topics: CFS, RT schedulers, load balancing, ftrace</p>
+</div>
+</div>
+</div>
+<div class="phase">
+<h2>Phase 3: Advanced (4-6 weeks)</h2>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Containers <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/admin-guide/cgroup-v2.rst" target="_blank">📖 Cgroups</a>
+<a class="link" href="https://man7.org/linux/man-pages/man7/namespaces.7.html" target="_blank">📖 Namespaces</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac5')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin5')">🐧 Linux</div>
+</div>
+<div id="mac5" class="platform-content active">
+<div class="cmd">brew install lima</div>
+<div class="cmd">limactl start default && limactl shell default</div>
+<div class="cmd"># Inside VM: sudo mkdir /sys/fs/cgroup/test</div>
+</div>
+<div id="lin5" class="platform-content">
+<div class="cmd">sudo mkdir /sys/fs/cgroup/test_group</div>
+<div class="cmd">echo "100M" | sudo tee /sys/fs/cgroup/test_group/memory.max</div>
+</div>
+</div>
+</div>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">eBPF <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://ebpf.io/what-is-ebpf/" target="_blank">📖 eBPF Intro</a>
+<a class="link" href="https://github.com/iovisor/bcc" target="_blank">💻 BCC Tools</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac6')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin6')">🐧 Linux</div>
+</div>
+<div id="mac6" class="platform-content active">
+<div class="cmd">limactl shell default</div>
+<div class="cmd">sudo apt install bpfcc-tools bpftrace</div>
+<div class="cmd">sudo bpftrace -e 'tracepoint:syscalls:sys_enter_open{printf("open\\n")}'</div>
+</div>
+<div id="lin6" class="platform-content">
+<div class="cmd">sudo apt install bpfcc-tools bpftrace</div>
+<div class="cmd">sudo bpftrace -e 'tracepoint:syscalls:sys_enter_open{printf("open\\n")}'</div>
+</div>
+</div>
+</div>
+</div>
+<div class="phase">
+<h2>Phase 4: Hardware (4-5 weeks)</h2>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">QEMU Testing <span>▼</span></div>
+<div class="resources">
+<div class="cmd">qemu-system-aarch64 -machine virt -cpu cortex-a57 -kernel arch/arm64/boot/Image -append "console=ttyAMA0" -nographic</div>
+<div class="cmd"># With GDB: add -s -S flags</div>
+</div>
+</div>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">Raspberry Pi <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://www.raspberrypi.org/documentation/" target="_blank">📖 RPi Docs</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac7')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin7')">🐧 Linux</div>
+</div>
+<div id="mac7" class="platform-content active">
+<div class="cmd">brew install minicom</div>
+<div class="cmd">minicom -D /dev/tty.usbserial-* -b 115200</div>
+</div>
+<div id="lin7" class="platform-content">
+<div class="cmd">sudo apt install minicom</div>
+<div class="cmd">sudo minicom -D /dev/ttyUSB0 -b 115200</div>
+</div>
+</div>
+</div>
+</div>
+<div class="phase">
+<h2>Phase 5: Real-time (2-3 weeks)</h2>
+<div class="topic" onclick="this.classList.toggle('active')">
+<div class="topic-title">PREEMPT_RT <span>▼</span></div>
+<div class="resources">
+<a class="link" href="https://rt.wiki.kernel.org/" target="_blank">📖 RT Wiki</a>
+<a class="link" href="https://www.kernel.org/pub/linux/kernel/projects/rt/" target="_blank">📥 Patches</a>
+<div style="margin-top:10px">
+<div class="platform-tab active" onclick="event.stopPropagation();switchPlatform(this,'mac8')">🍎 macOS</div>
+<div class="platform-tab" onclick="event.stopPropagation();switchPlatform(this,'lin8')">🐧 Linux</div>
+</div>
+<div id="mac8" class="platform-content active">
+<div class="cmd">curl -O https://www.kernel.org/pub/linux/kernel/projects/rt/6.6/patch-6.6-rt7.patch.gz</div>
+<div class="cmd">cd linux && zcat ../patch-6.6-rt7.patch.gz | patch -p1</div>
+<div class="cmd">make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig</div>
+</div>
+<div id="lin8" class="platform-content">
+<div class="cmd">wget https://www.kernel.org/pub/linux/kernel/projects/rt/6.6/patch-6.6-rt7.patch.gz</div>
+<div class="cmd">cd linux && zcat ../patch-6.6-rt7.patch.gz | patch -p1</div>
+<div class="cmd">make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="progress" class="tab-content">
+<h2>✅ Progress Tracker</h2>
+<div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0">
+<h3>Phase 1: ARM Architecture</h3>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Installed QEMU and ARM64 toolchain</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Built U-Boot for Raspberry Pi 4</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Created custom device tree nodes</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Compiled device trees with dtc</div></div>
+</div>
+<div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0">
+<h3>Phase 2: Core Kernel</h3>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Built Linux kernel from source</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Analyzed ARM64 memory layout</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Wrote kernel module testing allocators</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Set up KASAN for debugging</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Traced process creation with ftrace</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Analyzed CFS scheduler behavior</div></div>
+</div>
+<div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0">
+<h3>Phase 3: Advanced</h3>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Created custom cgroup configurations</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Implemented namespace isolation</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Created eBPF tracing programs</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Built performance monitoring with eBPF</div></div>
+</div>
+<div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0">
+<h3>Phase 4: Hardware</h3>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Booted custom kernel in QEMU</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Set up GDB remote debugging</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Configured Raspberry Pi for development</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Wrote GPIO and SPI drivers</div></div>
+</div>
+<div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0">
+<h3>Phase 5: Real-time</h3>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Applied PREEMPT_RT patches</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Built RT kernel</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Tested latency with cyclictest</div></div>
+<div class="check-item"><div class="checkbox" onclick="toggleCheck(this)"></div><div class="check-text">Deployed RT kernel on hardware</div></div>
+</div>
+</div>
+</div>
+<script>
+function showTab(t){document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.getElementById(t).classList.add('active');event.target.classList.add('active')}
+function switchPlatform(b,i){const p=b.parentElement;p.querySelectorAll('.platform-tab').forEach(t=>t.classList.remove('active'));p.parentElement.querySelectorAll('.platform-content').forEach(c=>c.classList.remove('active'));b.classList.add('active');document.getElementById(i).classList.add('active')}
+function toggleCheck(e){e.classList.toggle('checked');e.parentElement.classList.toggle('done');saveProgress()}
+function saveProgress(){const c=Array.from(document.querySelectorAll('.checkbox')).map(cb=>cb.classList.contains('checked'));localStorage.setItem('kernelProgress',JSON.stringify(c))}
+function loadProgress(){const s=localStorage.getItem('kernelProgress');if(s){const p=JSON.parse(s);document.querySelectorAll('.checkbox').forEach((cb,i)=>{if(p[i]){cb.classList.add('checked');cb.parentElement.classList.add('done')}})}}
+window.onload=loadProgress;
+</script>
 </body>
 </html>
